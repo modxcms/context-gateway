@@ -1,0 +1,6 @@
+Context Gateway 0.9.0-beta1
+===========================
+While only the initial public release,
+this version has already been tested in
+the wild on sites with collectively 1M+
+visitors per month.
