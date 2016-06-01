@@ -63,29 +63,46 @@ foreach ($exclude AS $key => $value) {
 $ctxOut = array();
 $ctxIdx = 0;
 foreach ($contexts as $key => $context) {
+    // If excluded context, skip it
     if (in_array($key, $exclude)) continue;
+    // Respect limit param (we're using 1-based indexing in the output, btw)
+    $ctxIdx++;
+    if (($contextLimit) && ($ctxIdx > $contextLimit)) break;
     
+    // Get settings
     $stgOut = array();
     $stgIdx = 0;
     foreach ($context as $setting => $value) {
+        // If namespace is set, only grab those settings
         if (!empty($namespace) && (strpos($setting, $namespace) !== 0)) continue;
+        // Know your limits
+        $stgIdx++;
+        if (($settingLimit) && ($stgIdx > $settingLimit)) break;
+        // If we're debugging then do that otherwise there's nothing left to do
         if (empty($settingTpl)) {
             if ($debug) $stgOut[] = print_r($context[$setting], true);
+            // Continue to debug or do nothing
             continue;
         }
+        // Format with settingTpl 
         $stgOut[] = $modx->getChunk($settingTpl, array('key' => $setting, 'value' => $value, 'idx' => $idx));
-        $stgIdx++;
     }
+    // Output settings to placeholder in wrapper chunk
     $context['settings'] = ($debug) ? $stgOut : implode($settingSeparator, $stgOut);
+    // Set some useful placeholders
     $context['context_key'] = $key;
     $context['idx'] = $idx;
     
+    // If we're debugging...
     if (empty($contextTpl)) {
         if ($debug) $ctxOut[] = print_r($context, true);
+        // Continue to debug or do nothing
         continue;
     }
+    // Note the $context has every setting, 
+    // AS WELL AS a placeholder 'settings' that holds all templated settings
     $ctxOut[] = $modx->getChunk($contextTpl, $context);
 }
-
+// Return
 if ($debug) return print_r($ctxOut, true);
 return implode($contextSeparator, $ctxOut);
