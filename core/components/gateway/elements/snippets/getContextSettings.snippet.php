@@ -32,22 +32,22 @@ $namespace = $modx->getOption('namespace', $scriptProperties, '');
 $contextTpl = $modx->getOption('contextTpl', $scriptProperties, '');
 $contextSeparator = $modx->getOption('contextSeparator', $scriptProperties, PHP_EOL);
 $contextLimit = $modx->getOption('contextLimit', $scriptProperties, '0');
-$exclude = $modx->getOption('exclude', $scriptProperties, ''); // coma separated list of excluded contexts
+// coma separated list of excluded contexts, overrides include
+$exclude = array_filter(array_map('trim', explode(',', $modx->getOption('exclude', $scriptProperties, '')))); 
+// coma separated list of included contexts
+$include = array_filter(array_map('trim', explode(',', $modx->getOption('include', $scriptProperties, '')))); 
 
 // Option for debugging
 $debug = $modx->getOption('debug', $scriptProperties, false);
-
-// prepare excluded contexts into array
-$exclude = explode(',', $exclude);
-foreach ($exclude AS $key => $value) {
-    $exclude[$key] = trim($value);
-}
 
 $ctxOut = array();
 $ctxIdx = 0;
 foreach ($contexts as $key => $context) {
     // If excluded context, skip it
-    if (in_array($key, $exclude)) continue;
+    if (!empty($exclude) && in_array($key, $exclude)) continue;
+    // If included contexts are specified and this isn't one, skip it
+    if (!empty($include) && !in_array($key, $include)) continue;
+    
     // Respect limit param (we're using 1-based indexing in the output, btw)
     $ctxIdx++;
     if (($contextLimit) && ($ctxIdx > $contextLimit)) break;
