@@ -10,11 +10,23 @@
                 "name": "Context Gateway"
                 ,"file": "ContextGateway.plugin.php"
                 ,"events": ["OnHandleRequest","OnSiteRefresh"]
+                ,"properties": [{
+                    "name": "skip_web_ctx"
+                    ,"value": 1
+                    ,"type": "combo-boolean"
+                    ,"description": "When true, web context settings are not cached to the same context_map as custom contexts. Defaults to true for b/c."
+                }]
             }]
             ,"snippets": [{
                 "name": "getContextSettings"
                 ,"file": "getcontextsettings.snippet.php"
                 ,"description": "Gets context settings and templates output with Chunks"
+                 ,"properties": [{
+                    "name": "skip_web_ctx"
+                    ,"value": 1
+                    ,"type": "combo-boolean"
+                    ,"description": "When true, web context settings are not cached to the same context_map as custom contexts. Defaults to true for b/c."
+                }]
             }]
         }
     }

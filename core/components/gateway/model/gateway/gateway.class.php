@@ -29,7 +29,7 @@ class Gateway {
     }
     
     public function getContexts() {
-        $contexts = [];
+        $contexts = array();
 
         $this->loadContextCache();
 

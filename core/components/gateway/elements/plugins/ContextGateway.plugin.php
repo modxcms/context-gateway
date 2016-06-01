@@ -1,9 +1,11 @@
 <?php
 $eventName = $modx->event->name;
 if ($eventName !== 'OnSiteRefresh' && $eventName !== 'OnHandleRequest') return '';
-$gateway = $modx->getService('gateway', 'Gateway', $modx->getOption('core_path') . 'components/gateway/model/gateway/');
+$corePath = $modx->getOption('gateway.core_path', null, MODX_CORE_PATH . 'components/gateway/');
+$modelPath = $corePath . 'model/gateway/';
+$gateway = $modx->getService('gateway', 'Gateway', $modelPath);
 if (!($gateway instanceof Gateway)){
-    $modx->log(modX::LOG_LEVEL_ERROR, "Unable to load Gateway class.");
+    $modx->log(modX::LOG_LEVEL_ERROR, "ContextGateway plugin could not load Gateway class.");
     return '';
 }
 

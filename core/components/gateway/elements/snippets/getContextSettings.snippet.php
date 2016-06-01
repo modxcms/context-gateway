@@ -3,42 +3,23 @@
  * getContextSettings Snippet
  * Version 0.0.1 
  * Author - YJ Tso <yj@modx.com> based on work by John Peca <john@modx.com>
+ * @package Gateway
  * 
  * 
 */ 
-$contexts = array();
-
-$cacheKey = $modx->getOption('cache_system_settings_key', null, 'system_settings');
-$cacheOptions = array(
-    xPDO::OPT_CACHE_HANDLER => $modx->getOption("cache_{$cacheKey}_handler", $scriptProperties, $modx->getOption(xPDO::OPT_CACHE_HANDLER)),
-    xPDO::OPT_CACHE_EXPIRES => $modx->getOption("cache_{$cacheKey}_expires", $scriptProperties, $modx->getOption(xPDO::OPT_CACHE_EXPIRES)),
-);
-/** @var xPDOCache $contextCache */
-$contextCache = $modx->cacheManager->getCacheProvider($cacheKey, $cacheOptions);
-
-if ($contextCache) {
-    $contexts = $contextCache->get('context_map');
+$corePath = $modx->getOption('gateway.core_path', null, MODX_CORE_PATH . 'components/gateway/');
+$modelPath = $corePath . 'model/gateway/';
+$gateway = $modx->getService('gateway', 'Gateway', $modelPath);
+if (!($gateway instanceof Gateway)){
+    $modx->log(modX::LOG_LEVEL_ERROR, "getContextSettings snippet could not load Gateway class.");
+    return '';
 }
+$gateway->init($scriptProperties);
+$contexts = $gateway->getContexts();
 
-if (empty($contexts)) {
-    $protectedContexts = array('mgr');
-    if ($modx->getOption('skip_web_ctx', $scriptProperties, true, true)) $protectedContexts[] = 'web';
-    /** @var modContext $contextsGraph */
-    $query = $modx->newQuery('modContext');
-    $query->where(array('modContext.key:NOT IN' => $protectedContexts));
-    $query->sortby($modx->escape('modContext') . '.' . $modx->escape('key'), 'ASC');
-    $contextsGraph = $modx->getCollectionGraph('modContext', '{"ContextSettings":{}}', $query);
-    foreach ($contextsGraph as $context) {
-        $contextSettings = array();
-        foreach ($context->ContextSettings as $cSetting) {
-            $contextSettings[$cSetting->get('key')] = $cSetting->get('value');
-        }
-        $contexts[$context->get('key')] = $contextSettings;
-    }
-    unset($contextsGraph);
-    if ($contextCache) {
-        $contextCache->set('context_map', $contexts);
-    }
+if (!$contexts) {
+    $modx->log(modX::LOG_LEVEL_ERROR, "Unable to fetch contexts map.");
+    return '';
 }
 
 // Options for settings
@@ -81,30 +62,34 @@ foreach ($contexts as $key => $context) {
         $stgIdx++;
         if (($settingLimit) && ($stgIdx > $settingLimit)) break;
         // If we're debugging then do that otherwise there's nothing left to do
-        if (empty($settingTpl)) {
-            if ($debug) $stgOut[] = print_r($context[$setting], true);
+        if ($debug) {
+            $stgOut[] = print_r(array($setting => $value), true);
             // Continue to debug or do nothing
             continue;
         }
         // Format with settingTpl 
         $stgOut[] = $modx->getChunk($settingTpl, array('key' => $setting, 'value' => $value, 'idx' => $idx));
     }
+
     // Output settings to placeholder in wrapper chunk
     $context['settings'] = ($debug) ? $stgOut : implode($settingSeparator, $stgOut);
+
     // Set some useful placeholders
     $context['context_key'] = $key;
     $context['idx'] = $ctxIdx;
     
     // If we're debugging...
-    if (empty($contextTpl)) {
-        if ($debug) $ctxOut[] = print_r($context, true);
+    if ($debug) {
+        $ctxOut[] = print_r($context, true);
         // Continue to debug or do nothing
         continue;
     }
+
     // Note the $context has every setting, 
     // AS WELL AS a placeholder 'settings' that holds all templated settings
     $ctxOut[] = $modx->getChunk($contextTpl, $context);
 }
+
 // Return
-if ($debug) return print_r($ctxOut, true);
+if ($debug) return '<pre>' . print_r($ctxOut, true) . '</pre>';
 return implode($contextSeparator, $ctxOut);
