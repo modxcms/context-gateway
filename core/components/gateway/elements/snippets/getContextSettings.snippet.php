@@ -39,115 +39,53 @@ if (empty($contexts)) {
     }
 }
 
-$tplRow = $modx->getOption('tplRow', $scriptProperties, '');
-$tplOuter = $modx->getOption('tplOuter', $scriptProperties, '');
-$separator = $modx->getOption('separator', $scriptProperties, '');
-$onlyUpcoming = $modx->getOption('onlyUpcoming', $scriptProperties, '0');
-$includeUpcoming = $modx->getOption('includeUpcoming', $scriptProperties, '1');
-$getLatLong = $modx->getOption('getLatLong', $scriptProperties, '0');
-$limit = $modx->getOption('limit', $scriptProperties, '0');
-$offset = $modx->getOption('offset', $scriptProperties, '0');
+// Options for settings
+$settingTpl = $modx->getOption('settingTpl', $scriptProperties, '');
+$settingSeparator = $modx->getOption('settingSeparator', $scriptProperties, PHP_EOL);
+$settingLimit = $modx->getOption('settingLimit', $scriptProperties, '0');
+$namespace = $modx->getOption('namespace', $scriptProperties, '');
+
+// Options for contexts
+$contextTpl = $modx->getOption('contextTpl', $scriptProperties, '');
+$contextSeparator = $modx->getOption('contextSeparator', $scriptProperties, PHP_EOL);
+$contextLimit = $modx->getOption('contextLimit', $scriptProperties, '0');
 $exclude = $modx->getOption('exclude', $scriptProperties, ''); // coma separated list of excluded contexts
 
-$outLoadMore ='';
-$out = [];
+// Option for debugging
+$debug = $modx->getOption('debug', $scriptProperties, false);
 
 // prepare excluded contexts into array
 $exclude = explode(',', $exclude);
 foreach ($exclude AS $key => $value) {
     $exclude[$key] = trim($value);
-    
 }
 
-if($getLatLong == 1) {
-    if (isset($_POST['location-geocode'])){ 
-        $geocode = explode(';', $_POST['location-geocode']);
-        $latLong = array(3 => $geocode[0], 4 => $geocode[1]);
+$ctxOut = array();
+$ctxIdx = 0;
+foreach ($contexts as $key => $context) {
+    if (in_array($key, $exclude)) continue;
     
-    // @dubrod - we are removing the session since no devs knew where to set it
-    //} elseif (isset($_SESSION['location-geocode'])){ 
-    //$geocode = explode(';', $_SESSION['location-geocode']);
-    
-    //this cookie is set via the HTML5 Mobile Splash Page
-    } elseif (isset($_COOKIE["userGPS"])){ 
-        $geocode = preg_split("/[\s|]+/", $_COOKIE["userGPS"]);
-        $latLong = array(3 => $geocode[0], 4 => $geocode[1]);
-    } else {  
-        // else we use the fall back maxmind api
-        $latLong = $modx->fromJSON($modx->runSnippet('getLatLong'));
+    $stgOut = array();
+    $stgIdx = 0;
+    foreach ($context as $setting => $value) {
+        if (!empty($namespace) && (strpos($setting, $namespace) !== 0)) continue;
+        if (empty($settingTpl)) {
+            if ($debug) $stgOut[] = print_r($context[$setting], true);
+            continue;
+        }
+        $stgOut[] = $modx->getChunk($settingTpl, array('key' => $setting, 'value' => $value, 'idx' => $idx));
+        $stgIdx++;
     }
-
-    foreach ($contexts as $key => $context) {
-        $contexts[$key]['distance'] = (int)$modx->runSnippet('getDistance', array('userLat' => $latLong[3], 'userLong' => $latLong[4], 'cityLat' => $context['lat'], 'cityLong' => $context['long']));   
-    }
+    $context['settings'] = ($debug) ? $stgOut : implode($settingSeparator, $stgOut);
+    $context['context_key'] = $key;
+    $context['idx'] = $idx;
     
-    uasort($contexts, function($a, $b) {
-        return $a['distance'] - $b['distance'];
-    });
-} else {
-    // Sort contexts array by state and context_title
-    $title = array();
-    $state = array();
-    foreach ($contexts as $key => $row) {
-        $title[$key]  = $row['context_title'];
-        $state[$key] = $row['state'];
+    if (empty($contextTpl)) {
+        if ($debug) $ctxOut[] = print_r($context, true);
+        continue;
     }
-    
-    array_multisort($state, SORT_ASC, SORT_STRING, $title, SORT_ASC, SORT_STRING, $contexts);
+    $ctxOut[] = $modx->getChunk($contextTpl, $context);
 }
 
-if ($parent == '') {
-    $idx = 0;
-    foreach ($contexts as $key => $context) {
-        if (!isset($context['ctx_parent'])) continue;
-        if ($context['disabled'] == 1) continue;
-        if ($context['upcoming'] != 1 && $onlyUpcoming == 1) continue;
-        if ($context['upcoming'] == 1 && $onlyUpcoming == 0 && $includeUpcoming == 0) continue;
-        if (in_array($key, $exclude)) continue;
-        
-        $idx++;
-        $context['idx'] = $idx;
-        $context['context_key'] = $key;
-        if($idx>$offset){
-            $out[] = $modx->getChunk($tplRow, $context);
-        }
-        if ($idx == ($limit + $offset) && $limit !=0 ){
-            $context['limit'] = $limit;
-            $context['parent'] = $parent;
-            $context['latLong'] = $latLong;
-            $outLoadMore = $modx->getChunk($tplLoadMore, $context);
-            break;    
-        }
-    }
-} else {
-    $idx = 0;
-    foreach ($contexts as $key => $context) {
-        if ($key == $parent) continue;
-        if (!isset($context['ctx_parent'])) continue;
-        if ($context['disabled'] == 1) continue;
-        if ($context['upcoming'] != 1 && $onlyUpcoming == 1) continue;
-        if ($context['upcoming'] == 1 && $onlyUpcoming == 0 && $includeUpcoming == 0) continue;
-        if (in_array($key, $exclude)) continue;
-        if ($context['ctx_parent'] == $parent) {
-            $idx++;
-            $context['idx'] = $idx;
-            $context['context_key'] = $key;
-            if($idx>$offset){
-               $out[] = $modx->getChunk($tplRow, $context);
-            }
-            if ($idx == ($limit + $offset) && $limit !=0){
-                $context['limit'] = $limit;
-                $context['latLong'] = $latLong;
-                $context['parent'] = $parent;
-                $outLoadMore = $modx->getChunk($tplLoadMore, $context);
-                break;    
-            }
-            
-        }
-    }
-}
-
-$debug = $modx->getOption('debug', $scriptProperties, false);
-if ($debug) print_r($contexts);
-return $modx->getChunk($tplOuter, array('locations' => implode($separator, $out),'loadMore' => $outLoadMore));
-
+if ($debug) return print_r($ctxOut, true);
+return implode($contextSeparator, $ctxOut);
