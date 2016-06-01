@@ -11,7 +11,10 @@ class Gateway {
     private $contextCache;
     private $pieces;
     private $cacheKey;
-
+    
+    /** options **/
+    public $skipWebCtx = true;
+    
     public function __construct(modX &$modx) {
         $this->modx =& $modx;
 
@@ -22,6 +25,7 @@ class Gateway {
         $this->scriptProperties = $scriptProperties;
 
         $this->cacheKey = $this->modx->getOption('cache_system_settings_key', $this->scriptProperties, 'system_settings');
+        $this->skipWebCtx = $this->modx->getOption('skip_web_ctx', $this->scriptProperties, true, true);
     }
     
     public function getContexts() {
@@ -78,11 +82,12 @@ class Gateway {
     }
 
     private function cacheContextsAndSettings() {
-        $contexts = [];
-
+        $contexts = array();
+        $protectedContexts = array('mgr');
+        if ($this->skipWebCtx) $protectedContexts[] = 'web';
         /** @var modContext $contextsGraph */
         $query = $this->modx->newQuery('modContext');
-        $query->where(['modContext.key:NOT IN' => ['web', 'mgr']]);
+        $query->where(array('modContext.key:NOT IN' => $protectedContexts));
         $query->sortby($this->modx->escape('modContext') . '.' . $this->modx->escape('key'), 'ASC');
         $contextsGraph = $this->modx->getCollectionGraph('modContext', '{"ContextSettings":{}}', $query);
 

@@ -21,9 +21,11 @@ if ($contextCache) {
 }
 
 if (empty($contexts)) {
+    $protectedContexts = array('mgr');
+    if ($modx->getOption('skip_web_ctx', $scriptProperties, true, true)) $protectedContexts[] = 'web';
     /** @var modContext $contextsGraph */
     $query = $modx->newQuery('modContext');
-    $query->where(array('modContext.key:NOT IN' => array('web', 'mgr')));
+    $query->where(array('modContext.key:NOT IN' => $protectedContexts));
     $query->sortby($modx->escape('modContext') . '.' . $modx->escape('key'), 'ASC');
     $contextsGraph = $modx->getCollectionGraph('modContext', '{"ContextSettings":{}}', $query);
     foreach ($contextsGraph as $context) {
@@ -91,7 +93,7 @@ foreach ($contexts as $key => $context) {
     $context['settings'] = ($debug) ? $stgOut : implode($settingSeparator, $stgOut);
     // Set some useful placeholders
     $context['context_key'] = $key;
-    $context['idx'] = $idx;
+    $context['idx'] = $ctxIdx;
     
     // If we're debugging...
     if (empty($contextTpl)) {

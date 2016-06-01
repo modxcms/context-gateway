@@ -3,13 +3,18 @@
     ,"lowCaseName": "gateway"
     ,"description": "MODX Context Gateway that supports inherited Context Settings and 'aliases'."
     ,"author": "@theboxer,@opengeek,@sepiariver"
-    ,"version": "0.9.0-beta1"
+    ,"version": "1.0.0-dev1"
     ,"package":{
         "elements": {
             "plugins": [{
                 "name": "Context Gateway"
                 ,"file": "ContextGateway.plugin.php"
                 ,"events": ["OnHandleRequest","OnSiteRefresh"]
+            }]
+            ,"snippets": [{
+                "name": "getContextSettings"
+                ,"file": "getcontextsettings.snippet.php"
+                ,"description": "Gets context settings and templates output with Chunks"
             }]
         }
     }
