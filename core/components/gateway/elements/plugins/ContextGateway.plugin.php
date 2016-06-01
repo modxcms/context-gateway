@@ -16,9 +16,14 @@ switch ($eventName) {
         break;
     case 'OnHandleRequest':
         //$modx->log(modX::LOG_LEVEL_ERROR, "OnHandleRequest fired on {$_SERVER['REQUEST_URI']}");
-        $gateway->init($scriptProperties);
-        $gateway->handleRequest();
-        break;
+        $disabled = $modx->getOption('disble_router', $scriptProperties, false);
+        if ($disabled) {
+            break;
+        } else {
+            $gateway->init($scriptProperties);
+            $gateway->handleRequest();
+            break;            
+        }
     default:
         break;
 }

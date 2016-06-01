@@ -3,7 +3,7 @@
     ,"lowCaseName": "gateway"
     ,"description": "MODX Context Gateway that supports inherited Context Settings and 'aliases'."
     ,"author": "@theboxer,@opengeek,@sepiariver"
-    ,"version": "1.0.0-dev1"
+    ,"version": "1.0.0-dev3"
     ,"package":{
         "elements": {
             "plugins": [{
@@ -15,6 +15,11 @@
                     ,"value": 1
                     ,"type": "combo-boolean"
                     ,"description": "When true, web context settings are not cached to the same context_map as custom contexts. Defaults to true for b/c."
+                },{
+                    "name": "disble_router"
+                    ,"value": 0
+                    ,"type": "combo-boolean"
+                    ,"description": "When true, OnHandleRequest is disabled. You can also disable the Event but saving this property in a custom property set will persist across upgrades."
                 }]
             }]
             ,"snippets": [{
