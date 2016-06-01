@@ -35,7 +35,9 @@ $contextLimit = $modx->getOption('contextLimit', $scriptProperties, '0');
 // coma separated list of excluded contexts, overrides include
 $exclude = array_filter(array_map('trim', explode(',', $modx->getOption('exclude', $scriptProperties, '')))); 
 // coma separated list of included contexts
-$include = array_filter(array_map('trim', explode(',', $modx->getOption('include', $scriptProperties, '')))); 
+$include = array_filter(array_map('trim', explode(',', $modx->getOption('include', $scriptProperties, ''))));
+$contextSortKey = $modx->getOption('contextSortKey', $scriptProperties, '');
+$contextSortDir = $modx->getOption('contextSortDir', $scriptProperties, 'ASC');
 
 // Option for debugging
 $debug = $modx->getOption('debug', $scriptProperties, false);
@@ -51,6 +53,10 @@ foreach ($contexts as $key => $context) {
     // Respect limit param (we're using 1-based indexing in the output, btw)
     $ctxIdx++;
     if (($contextLimit) && ($ctxIdx > $contextLimit)) break;
+    
+    // Sort key
+    $ctxKey = $ctxIdx;
+    if (!empty($contextSortKey) && isset($context[$contextSortKey])) $ctxKey = $context[$contextSortKey]; 
     
     // Get settings
     $stgOut = array();
@@ -87,9 +93,17 @@ foreach ($contexts as $key => $context) {
 
     // Note the $context has every setting, 
     // AS WELL AS a placeholder 'settings' that holds all templated settings
-    $ctxOut[] = $modx->getChunk($contextTpl, $context);
+    $ctxOut[$ctxKey] = $modx->getChunk($contextTpl, $context);
 }
 
+// Sort
+if (!empty($contextSortKey)) {
+    if (strtolower($contextSortDir) === 'desc') {
+        krsort($ctxOut);
+    } else {
+        ksort($ctxOut);
+    }
+}
 // Return
 if ($debug) return '<pre>' . print_r($ctxOut, true) . '</pre>';
 return implode($contextSeparator, $ctxOut);
