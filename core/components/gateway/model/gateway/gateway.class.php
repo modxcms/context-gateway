@@ -18,7 +18,7 @@ class Gateway {
     public function __construct(modX &$modx) {
         $this->modx =& $modx;
 
-        $this->skipSettings = array_keys($this->skipSettings);
+        $this->skipSettings = array_flip($this->skipSettings);
     }
 
     public function init($scriptProperties) {
