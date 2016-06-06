@@ -1,6 +1,8 @@
 <?php
 $eventName = $modx->event->name;
+if ($modx->context->get('key') == 'mgr') return '';
 if ($eventName !== 'OnSiteRefresh' && $eventName !== 'OnHandleRequest') return '';
+
 $corePath = $modx->getOption('gateway.core_path', null, MODX_CORE_PATH . 'components/gateway/');
 $modelPath = $corePath . 'model/gateway/';
 $gateway = $modx->getService('gateway', 'Gateway', $modelPath);
