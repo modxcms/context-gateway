@@ -1,6 +1,5 @@
 <?php
 $eventName = $modx->event->name;
-if ($modx->context->get('key') == 'mgr') return '';
 if ($eventName !== 'OnSiteRefresh' && $eventName !== 'OnHandleRequest') return '';
 
 $corePath = $modx->getOption('gateway.core_path', null, MODX_CORE_PATH . 'components/gateway/');
@@ -13,11 +12,13 @@ if (!($gateway instanceof Gateway)){
 
 switch ($eventName) {
     case 'OnSiteRefresh':
+        $modx->log(modX::LOG_LEVEL_INFO, 'ContextGateway plugin is refreshing the context map.');
         $gateway->init($scriptProperties);
         $gateway->refreshContextCache($partitions);
         break;
     case 'OnHandleRequest':
         //$modx->log(modX::LOG_LEVEL_ERROR, "OnHandleRequest fired on {$_SERVER['REQUEST_URI']}");
+        if ($modx->context->get('key') == 'mgr') break;
         $disabled = $modx->getOption('disble_router', $scriptProperties, false);
         if ($disabled) {
             break;

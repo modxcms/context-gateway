@@ -1,3 +1,7 @@
+Context Gateway 1.0.1
+===========================
+Add fixes to legacy bugs in gateway class.
+
 Context Gateway 1.0.0
 ===========================
 In development. Adds a Snippet to access
