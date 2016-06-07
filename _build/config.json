@@ -3,7 +3,7 @@
     ,"lowCaseName": "gateway"
     ,"description": "MODX Context Gateway that supports inherited Context Settings and 'aliases'."
     ,"author": "@theboxer,@opengeek,@sepiariver"
-    ,"version": "1.0.1-rc1"
+    ,"version": "1.0.1-rc2"
     ,"package":{
         "elements": {
             "plugins": [{
