@@ -99,7 +99,6 @@ class Gateway {
             }
 
             $contexts[$context->get('key')] = $contextSettings;
-            
         }
 
         unset($contextsGraph);
@@ -141,7 +140,7 @@ class Gateway {
     }
 
     private function processChildContext($contexts, $cKey, $cSettings) {
-        $this->handleRedirect(2, $cSettings['site_start']);
+        $this->handleRedirect(2/*, $cSettings['site_start']*/);
 
         $this->setPlaceholdersAndOptions($contexts, $cSettings);
 
@@ -156,7 +155,7 @@ class Gateway {
             $this->redirectToParentChildURI($contexts, $cSettings);
         }
 
-        $this->handleRedirect(1, $cSettings['site_start']);
+        $this->handleRedirect(1/*, $cSettings['site_start']*/);
 
         $this->setPlaceholdersAndOptions($contexts, $cSettings);
 
@@ -166,17 +165,19 @@ class Gateway {
         return true;
     }
 
-    private function handleRedirect($position, $siteStart) {
+    private function handleRedirect($position/*, $siteStart*/) {
         if (isset($this->pieces[$position])) {
             $this->pieces = array_slice($this->pieces, $position);
-            $siteStart = $this->modx->getObject('modResource', $siteStart);
+            //$siteStart = $this->modx->getObject('modResource', $siteStart);
+            
             if ($this->pieces[count($this->pieces) - 1] == '') {
                 array_pop($this->pieces);
             }
             $pieces = implode('/', $this->pieces);
             
-            $q = ($pieces == '') ? $siteStart->alias : $pieces;
-
+            //$q = ($pieces == '') ? $siteStart->alias . '/' : $pieces;
+            $q = ($pieces == '') ? '' : $pieces;
+            
             $_REQUEST[$this->modx->getOption('request_param_alias', null, 'q')] = $q;
         } else {
             $this->modx->sendRedirect(MODX_SITE_URL . str_replace('//', '/', implode('/', $this->pieces) . '/'), ['responseCode' => 'HTTP/1.1 301 Moved Permanently']);
