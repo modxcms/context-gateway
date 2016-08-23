@@ -12,4 +12,4 @@ The gateway class requires the use of a special Context Setting ```ctx_alias``` 
 
 ## Performance
 
-This Plugin has been used for years by the MODX Team, on Production sites with over 1M monthly visitors.
+This Plugin has been used for years by the MODX Team on numerous Production sites, some with millions of monthly visitors.
