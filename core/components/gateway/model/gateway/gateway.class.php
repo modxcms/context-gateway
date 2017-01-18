@@ -22,7 +22,7 @@ class Gateway {
     }
 
     public function init($scriptProperties) {
-        $this->scriptProperties = $scriptProperties;
+        $this->scriptProperties = (is_array($scriptProperties)) ? $scriptProperties : array();
 
         $this->cacheKey = $this->modx->getOption('cache_system_settings_key', $this->scriptProperties, 'system_settings');
         $this->skipWebCtx = $this->modx->getOption('skip_web_ctx', $this->scriptProperties, true, true);
