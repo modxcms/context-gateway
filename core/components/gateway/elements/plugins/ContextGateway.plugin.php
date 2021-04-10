@@ -19,7 +19,7 @@ switch ($eventName) {
     case 'OnHandleRequest':
         //$modx->log(modX::LOG_LEVEL_ERROR, "OnHandleRequest fired on {$_SERVER['REQUEST_URI']}");
         if ($modx->context->get('key') == 'mgr') break;
-        $disabled = $modx->getOption('disble_router', $scriptProperties, false);
+        $disabled = $modx->getOption('disable_router', $scriptProperties, false);
         if ($disabled) {
             break;
         } else {
